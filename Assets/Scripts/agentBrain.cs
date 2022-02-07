@@ -11,14 +11,15 @@ public class agentBrain : MonoBehaviour
     public float agentEngergy = 7;
     
     public int foodCount = 0;
-    public int senseRadius; 
+    public int senseRadius = 50; 
+    public bool seesFood;
     private int wanderDistance = 8;     
     private float agentFull = 2;
 
     [SerializeField]
-    public Vector3 destination;
+    public Vector3 destination ;
 
-    private bool hasDestination;
+    public bool hasDestination;
     public bool returnedToWall = false;
 
     NavMeshAgent _hungryAgent;
@@ -27,13 +28,15 @@ public class agentBrain : MonoBehaviour
     void Start()
     {
         _hungryAgent = GetComponent<NavMeshAgent>();
+        destination = new Vector3(0, 0, 5);
+        hasDestination = false;
     }
 
 
 
     //generates a new destination for the hungry agent to travel to 
 
-    private void wander() 
+    void wander() 
     {
         float angleOfMovement = Random.Range(0f, Mathf.PI * 2);
 
@@ -43,80 +46,82 @@ public class agentBrain : MonoBehaviour
         destination = new Vector3(transform.position.x + (destinationX * wanderDistance), 0, transform.position.z + (destinationZ * wanderDistance));
 
         if (destination.x > 25) {
-                destination.x = 25;
+                destination.x = 24;
             } else if (destination.x < -25) {
-                destination.x = -25;
+                destination.x = -24;
             }
 
             if (destination.z > 25)
             {
-                destination.z = 25;
+                destination.z = 24;
             } else if (destination.z < -25) {
-                destination.z = -25;
+                destination.z = -24;
             }
-        
-    
- 
     }
     
 
 
-    private void foodSearch() 
+    void foodSearch() 
     {
-        Collider[] Colliders = Physics.OverlapSphere(new Vector3(transform.position.x, 0, transform.position.z), senseRadius);
+        Collider[] Colliders = Physics.OverlapSphere(new Vector3(_hungryAgent.transform.position.x, 0, _hungryAgent.transform.position.z), senseRadius);
             foreach (var hitCollider in Colliders)
                 {
+                    Debug.Log("collider +1");
                     if (hitCollider.gameObject.CompareTag("food"))
                     {
+                        Debug.Log("I see food");
                         var foodTransform = hitCollider.gameObject.transform;
                         destination = foodTransform.position;
-                        hasDestination = true;
+                        seesFood = true;
+                        return;
                     }
                 }
-            destination = new Vector3(0, 50, 0);
+            //destination = new Vector3(0, 999, 0);
     }
 
 
-    /*
-    private void returnHome() 
+    void returnHome() 
     {
-        if 
-    }
-   */
+        UnityEngine.AI.NavMeshHit edge;
+        if (UnityEngine.AI.NavMesh.FindClosestEdge(transform.position, out edge, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            destination =  edge.position;
+        }
 
-    
+    } 
 
 
 
     void Update() 
     {
-        /*
-         if ( agentposition == destiation) 
-            {
-        hasDestination = false;
+        //If the agent has reached it's destination and it has not returned to the wall find a new destination
+        if (_hungryAgent.transform.position.x == destination.x && _hungryAgent.transform.position.z == destination.z && returnedToWall == false) 
+        {
+            hasDestination = false;
         }
-
-         */
-        if (hasDestination == false)
+        
+        if (hasDestination == false) 
         {
             /*
-                if (foodCount == agentFull) 
-                {
-                    returnhome();
-                    //destination = *Closest wall*
-                    returnedToWall = true;
-                }
+            if (foodCount == agentFull) 
+            {
+                returnhome();
+                returnedToWall = true;
+            }
             */
             foodSearch();
-            if (destination.y == 50) 
+            if (destination.y == 999) 
             {
                 wander();
-                hasDestination = true;
             }
-
             _hungryAgent.SetDestination(destination);
-
+            hasDestination = false;
         }
+
+        
+        
+            
+        
     
     }
 
@@ -127,7 +132,7 @@ public class agentBrain : MonoBehaviour
         if (other.gameObject.CompareTag("food"))
         {
             foodCount += 1;
-            Destroy(other);
+            Destroy(other.gameObject);
         }
 
     }
