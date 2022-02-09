@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Linq;
 
 
 //includes agent specific stats. Is assigned to each of the agent prefabs. 
@@ -12,12 +13,12 @@ public class agentBrain : MonoBehaviour
     
     public int foodCount = 0;
     public int senseRadius = 50; 
-    public bool seesFood;
     private int wanderDistance = 8;     
     private float agentFull = 2;
 
+
     [SerializeField]
-    public Vector3 destination ;
+    public Vector3 destination;
 
     public bool hasDestination;
     public bool returnedToWall = false;
@@ -28,8 +29,8 @@ public class agentBrain : MonoBehaviour
     void Start()
     {
         _hungryAgent = GetComponent<NavMeshAgent>();
-        destination = new Vector3(0, 0, 5);
         hasDestination = false;
+        returnedToWall = false;
     }
 
 
@@ -63,20 +64,23 @@ public class agentBrain : MonoBehaviour
 
     void foodSearch() 
     {
-        Collider[] Colliders = Physics.OverlapSphere(new Vector3(_hungryAgent.transform.position.x, 0, _hungryAgent.transform.position.z), senseRadius);
+        Collider[] Colliders = Physics.OverlapSphere(new Vector3(0,0,0), 50);
+            Colliders = Colliders.OrderBy(
+                x => Vector2.Distance(this.transform.position,x.transform.position)
+            ).ToList();
             foreach (var hitCollider in Colliders)
                 {
-                    Debug.Log("collider +1");
-                    if (hitCollider.gameObject.CompareTag("food"))
+                    Debug.Log(hitCollider.tag);
+                    if (hitCollider.CompareTag("food"))
                     {
                         Debug.Log("I see food");
                         var foodTransform = hitCollider.gameObject.transform;
                         destination = foodTransform.position;
-                        seesFood = true;
                         return;
+                    }else {
+                        destination = new Vector3(0,999,0);
                     }
                 }
-            //destination = new Vector3(0, 999, 0);
     }
 
 
@@ -95,8 +99,10 @@ public class agentBrain : MonoBehaviour
     void Update() 
     {
         //If the agent has reached it's destination and it has not returned to the wall find a new destination
-        if (_hungryAgent.transform.position.x == destination.x && _hungryAgent.transform.position.z == destination.z && returnedToWall == false) 
+        if ((_hungryAgent.transform.position.x == destination.x) && (_hungryAgent.transform.position.z == destination.z) && (returnedToWall == false)) 
         {
+            Debug.Log("reached location"); 
+            
             hasDestination = false;
         }
         
@@ -109,13 +115,13 @@ public class agentBrain : MonoBehaviour
                 returnedToWall = true;
             }
             */
-            foodSearch();
+           foodSearch();
             if (destination.y == 999) 
             {
                 wander();
             }
             _hungryAgent.SetDestination(destination);
-            hasDestination = false;
+            hasDestination = true;
         }
 
         
