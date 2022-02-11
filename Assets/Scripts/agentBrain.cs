@@ -12,10 +12,10 @@ public class agentBrain : MonoBehaviour
     public float agentEngergy = 7;
     
     public int foodCount = 0;
-    public int senseRadius = 50; 
+    public int senseRadius = 100; 
     private int wanderDistance = 8;     
     private float agentFull = 2;
-
+    public bool seesFood;
 
     [SerializeField]
     public Vector3 destination;
@@ -66,22 +66,27 @@ public class agentBrain : MonoBehaviour
     {
         Collider[] Colliders = Physics.OverlapSphere(new Vector3(0,0,0), 50);
             Colliders = Colliders.OrderBy(
-                x => Vector2.Distance(this.transform.position,x.transform.position)
-            ).ToList();
+                x => Vector2.Distance(this.transform.position, x.transform.position)
+            ).ToArray();
+            
             foreach (var hitCollider in Colliders)
                 {
-                    Debug.Log(hitCollider.tag);
                     if (hitCollider.CompareTag("food"))
                     {
-                        Debug.Log("I see food");
+                        Debug.Log("I see food" + hitCollider.transform.position);
                         var foodTransform = hitCollider.gameObject.transform;
                         destination = foodTransform.position;
+                        seesFood = true;
                         return;
                     }else {
-                        destination = new Vector3(0,999,0);
+                        seesFood = false;
                     }
                 }
     }
+
+
+
+
 
 
     void returnHome() 
@@ -115,8 +120,9 @@ public class agentBrain : MonoBehaviour
                 returnedToWall = true;
             }
             */
+            //need to implement a function that stops agents from going to a locaion if the food is alread eaten
            foodSearch();
-            if (destination.y == 999) 
+            if (seesFood == false) 
             {
                 wander();
             }
