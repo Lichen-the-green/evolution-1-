@@ -134,7 +134,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentEngergy: 7
   foodCount: 0
-  senseRadius: 50
+  senseRadius: 10
+  seesFood: 0
   destination: {x: 0, y: 0, z: 0}
   hasDestination: 0
   returnedToWall: 0

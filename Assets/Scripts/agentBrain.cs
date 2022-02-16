@@ -12,13 +12,14 @@ public class agentBrain : MonoBehaviour
     public float agentEngergy = 7;
     
     public int foodCount = 0;
-    public int senseRadius = 100; 
-    private int wanderDistance = 8;     
+    public int senseRadius = 10;
+    private int wanderDistance = 8;
     private float agentFull = 2;
     public bool seesFood;
 
     [SerializeField]
     public Vector3 destination;
+
 
     public bool hasDestination;
     public bool returnedToWall = false;
@@ -31,12 +32,10 @@ public class agentBrain : MonoBehaviour
         _hungryAgent = GetComponent<NavMeshAgent>();
         hasDestination = false;
         returnedToWall = false;
+
     }
 
-
-
     //generates a new destination for the hungry agent to travel to 
-
     void wander() 
     {
         float angleOfMovement = Random.Range(0f, Mathf.PI * 2);
@@ -52,28 +51,27 @@ public class agentBrain : MonoBehaviour
                 destination.x = -24;
             }
 
-            if (destination.z > 25)
-            {
-                destination.z = 24;
-            } else if (destination.z < -25) {
-                destination.z = -24;
-            }
+        if (destination.z > 25)
+        {
+            destination.z = 24;
+        } else if (destination.z < -25) {
+            destination.z = -24;
+        }
     }
     
 
 
     void foodSearch() 
     {
-        Collider[] Colliders = Physics.OverlapSphere(new Vector3(0,0,0), 50);
+        Collider[] Colliders = Physics.OverlapSphere(new Vector3(0,0,0), senseRadius);
             Colliders = Colliders.OrderBy(
-                x => Vector2.Distance(this.transform.position, x.transform.position)
+                x => Vector3.Distance(this.transform.position, x.transform.position)
             ).ToArray();
             
             foreach (var hitCollider in Colliders)
                 {
                     if (hitCollider.CompareTag("food"))
                     {
-                        Debug.Log("I see food" + hitCollider.transform.position);
                         var foodTransform = hitCollider.gameObject.transform;
                         destination = foodTransform.position;
                         seesFood = true;
@@ -83,11 +81,6 @@ public class agentBrain : MonoBehaviour
                     }
                 }
     }
-
-
-
-
-
 
     void returnHome() 
     {
@@ -104,6 +97,8 @@ public class agentBrain : MonoBehaviour
     void Update() 
     {
         //If the agent has reached it's destination and it has not returned to the wall find a new destination
+
+            //round off agent's position and destination before comparing
         if ((_hungryAgent.transform.position.x == destination.x) && (_hungryAgent.transform.position.z == destination.z) && (returnedToWall == false)) 
         {
             Debug.Log("reached location"); 
@@ -121,7 +116,7 @@ public class agentBrain : MonoBehaviour
             }
             */
             //need to implement a function that stops agents from going to a locaion if the food is alread eaten
-           foodSearch();
+            foodSearch();
             if (seesFood == false) 
             {
                 wander();
